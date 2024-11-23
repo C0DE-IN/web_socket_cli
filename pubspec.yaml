@@ -1,0 +1,12 @@
+name: web_socket_cli
+description: A cross-platform WebSocket client with support for headers and followRedirects.
+version: 0.0.1
+homepage: https://github.com/yourusername/websocket_client
+
+environment:
+  sdk: '>=2.17.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  universal_io: ^2.2.2
