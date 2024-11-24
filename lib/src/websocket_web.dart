@@ -1,27 +1,60 @@
 import 'dart:async';
 import 'dart:html';
+import 'dart:typed_data';
 import 'websocket_base.dart';
+import 'websocket_exception.dart';
 
 class WebSocketWeb extends WebSocketBase {
   final WebSocket _socket;
 
   WebSocketWeb._(this._socket);
 
-  static WebSocketBase connect(String url,
-      {Map<String, String>? headers, bool followRedirects = true}) {
-    // Headers and followRedirects are not supported directly by WebSocket API in web
-    final socket = WebSocket(url);
+  static Future<WebSocketBase> connect(String url,
+      {Map<String, String>? headers, bool followRedirects = true}) async {
+    final completer = Completer<WebSocketWeb>();
 
-    return WebSocketWeb._(socket);
+    final socket = WebSocket(url);
+    socket.binaryType = 'arraybuffer';
+
+    // Listen for open event to resolve the completer
+    socket.onOpen.listen((_) {
+      completer.complete(WebSocketWeb._(socket));
+    });
+
+    // Handle errors
+    socket.onError.listen((event) {
+      completer
+          .completeError(WebSocketException('Failed to connect to WebSocket'));
+    });
+
+    // If the WebSocket is closed before being opened, handle that case
+    socket.onClose.listen((event) {
+      if (!completer.isCompleted) {
+        completer.completeError(
+            WebSocketException('WebSocket connection closed prematurely'));
+      }
+    });
+
+    return completer.future;
   }
 
   @override
-  Stream<dynamic> get messages => _socket.onMessage.map((event) => event.data);
+  Stream<dynamic> get messages => _socket.onMessage.map((event) {
+        if (event.data is ByteBuffer) {
+          // Convert ArrayBuffer to Uint8List
+          return Uint8List.view(event.data as ByteBuffer);
+        } else if (event.data is String) {
+          return event.data; // Handle text messages
+        }
+        throw UnsupportedError('Unsupported message type');
+      });
 
   @override
   void send(dynamic data) {
-    if (data is String || data is List<int>) {
-      _socket.send(data);
+    if (data is String) {
+      _socket.send(data); // Send text data
+    } else if (data is List<int>) {
+      _socket.send(data); // Send binary data
     } else {
       throw ArgumentError('Unsupported data type');
     }

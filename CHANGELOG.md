@@ -6,3 +6,9 @@
   - Custom headers.
   - Redirect handling.
   - Cross-platform usage (web, iOS, Android).
+
+## 0.0.2
+- Dynamic loading between io and html package.
+
+## 0.0.9
+- Added support for binary data stream

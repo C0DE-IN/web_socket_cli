@@ -1,22 +1,31 @@
-library websocket_client;
+import 'dart:async';
+import 'src/websocket_base.dart';
+import 'src/websocket_platform_stub.dart'
+    if (dart.library.io) 'src/websocket_platform_io.dart'
+    if (dart.library.html) 'src/websocket_platform_web.dart';
 
-// import 'dart:io' as io;
-// import 'dart:html' as html if (dart.library.html) 'src/websocket_web.dart';
-import 'src/websocket_base.dart' if (dart.library.io) 'src/websocket_io.dart';
+class WebSocketCli {
+  late final Future<WebSocketBase> _client;
 
-/// WebSocket Client with support for headers and followRedirects
-class WebSocketClient {
-  late final WebSocketBase _client;
-
-  WebSocketClient(String url,
+  WebSocketCli(String url,
       {Map<String, String>? headers, bool followRedirects = true}) {
-    _client = WebSocketBase.connect(url,
+    _client = getWebSocketImplementation(url,
         headers: headers, followRedirects: followRedirects);
   }
 
-  Stream<dynamic> get messages => _client.messages;
+  // Await the Future and then access the messages stream using asyncExpand
+  Stream<dynamic> get messages =>
+      _client.asStream().asyncExpand((client) => client.messages);
 
-  void send(dynamic data) => _client.send(data);
+  // Await the Future and then call the send method
+  void send(dynamic data) async {
+    final client = await _client;
+    client.send(data);
+  }
 
-  void close([int? code, String? reason]) => _client.close(code, reason);
+  // Await the Future and then call the close method
+  void close([int? code, String? reason]) async {
+    final client = await _client;
+    client.close(code, reason);
+  }
 }

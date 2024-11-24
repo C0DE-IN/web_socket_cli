@@ -1,6 +1,6 @@
 name: web_socket_cli
 description: A cross-platform WebSocket client with support for headers and followRedirects.
-version: 0.0.1
+version: 0.0.9
 homepage: https://github.com/C0DE-IN/web_socket_cli.git
 
 environment:

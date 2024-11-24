@@ -1,5 +1,5 @@
 abstract class WebSocketBase {
-  /// Connects to the WebSocket server
+  /// Connects to the WebSocket server.
   static WebSocketBase connect(String url,
       {Map<String, String>? headers, bool followRedirects = true}) {
     throw UnsupportedError('Platform not supported');
